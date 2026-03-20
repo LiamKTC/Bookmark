@@ -1,0 +1,150 @@
+export const STORAGE_KEY = 'engineeringBookmarkDashboard.v2';
+
+export const DEFAULT_TYPES = [
+  'Daily',
+  'Drawings / Models',
+  'Registers / Trackers',
+  'Standards / Specs',
+  'Meetings',
+  'Submissions / Delivery',
+  'Issues / RFIs',
+  'Dashboards',
+  'Commercial / Admin',
+  'Other'
+];
+
+function makeProject(name, color, icon, collapsed = false) {
+  return { id: crypto.randomUUID(), name, color, icon, collapsed };
+}
+
+const projectA = makeProject('Project Falcon', 'blue', 'PF');
+const projectB = makeProject('EastLink TP01', 'green', 'TP1');
+const projectC = makeProject('SKF Portal', 'purple', 'SKF', true);
+
+export const defaultState = {
+  selectedProjectId: 'all',
+  projects: [projectA, projectB, projectC],
+  links: [
+    {
+      id: crypto.randomUUID(),
+      projectId: projectA.id,
+      type: 'Dashboards',
+      title: 'Project dashboard',
+      url: 'https://example.com/falcon/dashboard',
+      note: 'Daily launch point for current actions, issues, and package status.',
+      badge: 'Daily',
+      pinned: true,
+      visits: 12,
+      lastOpened: Date.now() - 1000 * 60 * 18,
+      order: 0
+    },
+    {
+      id: crypto.randomUUID(),
+      projectId: projectA.id,
+      type: 'Issues / RFIs',
+      title: 'RFI register',
+      url: 'https://example.com/falcon/rfi-register',
+      note: 'Engineering clarifications and open RFIs.',
+      badge: 'Live',
+      pinned: false,
+      visits: 5,
+      lastOpened: Date.now() - 1000 * 60 * 120,
+      order: 1
+    },
+    {
+      id: crypto.randomUUID(),
+      projectId: projectB.id,
+      type: 'Drawings / Models',
+      title: 'TP01 issued drawing set',
+      url: 'https://example.com/tp01/drawings',
+      note: 'Latest issued package and markup folder.',
+      badge: 'IFC',
+      pinned: true,
+      visits: 9,
+      lastOpened: Date.now() - 1000 * 60 * 30,
+      order: 0
+    },
+    {
+      id: crypto.randomUUID(),
+      projectId: projectB.id,
+      type: 'Meetings',
+      title: 'Coordination minutes',
+      url: 'https://example.com/tp01/minutes',
+      note: 'Weekly minutes and action list.',
+      badge: 'Weekly',
+      pinned: false,
+      visits: 6,
+      lastOpened: Date.now() - 1000 * 60 * 60 * 26,
+      order: 1
+    },
+    {
+      id: crypto.randomUUID(),
+      projectId: projectC.id,
+      type: 'Commercial / Admin',
+      title: 'Portal admin',
+      url: 'https://example.com/skf/admin',
+      note: 'Admin area and portal checks.',
+      badge: 'Admin',
+      pinned: false,
+      visits: 2,
+      lastOpened: Date.now() - 1000 * 60 * 60 * 72,
+      order: 0
+    }
+  ]
+};
+
+export function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return structuredClone(defaultState);
+    const state = JSON.parse(raw);
+    state.selectedProjectId ||= 'all';
+    state.projects ||= [];
+    state.links ||= [];
+    state.links = state.links.map((link, index) => ({
+      visits: 0,
+      lastOpened: null,
+      order: index,
+      pinned: false,
+      badge: '',
+      note: '',
+      ...link
+    }));
+    return state;
+  } catch {
+    return structuredClone(defaultState);
+  }
+}
+
+export function saveState(state) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+export function exportState(state) {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'engineering-bookmark-dashboard-data.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export function importStateFromFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result);
+        if (!Array.isArray(data.projects) || !Array.isArray(data.links)) {
+          throw new Error('Invalid data');
+        }
+        resolve(data);
+      } catch (error) {
+        reject(error);
+      }
+    };
+    reader.onerror = reject;
+    reader.readAsText(file);
+  });
+}
