@@ -1,0 +1,21 @@
+{
+  "selectedProjectId": "all",
+  "projects": [
+    { "id": "project-1", "name": "EastLink TP01", "color": "soft-green", "icon": "TP1", "collapsed": false },
+    { "id": "project-2", "name": "SKF Portal", "color": "soft-purple", "icon": "SKF", "collapsed": false }
+  ],
+  "links": [
+    {
+      "id": "link-1",
+      "projectId": "project-1",
+      "type": "Drawings / Models",
+      "title": "Issued drawing set",
+      "url": "https://example.com/drawings",
+      "note": "Latest issued package and markups.",
+      "badge": "Issued",
+      "pinned": true,
+      "visits": 0,
+      "lastOpened": null
+    }
+  ]
+}

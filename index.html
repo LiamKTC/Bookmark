@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project Bookmark Dashboard</title>
+  <meta name="description" content="A project-first bookmark dashboard for engineering work across multiple SharePoint environments." />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="panel hero-main">
+        <div class="eyebrow">Project-first bookmark dashboard</div>
+        <h1>Find the right link in one glance.</h1>
+        <p>
+          Organise links by project, keep high-frequency resources pinned, surface recent items,
+          and add new projects and links quickly without a backend.
+        </p>
+      </div>
+      <div class="panel hero-side">
+        <div class="stats" id="stats"></div>
+        <div class="small">
+          This version stores data in your browser so it works on GitHub Pages. Export regularly if you rely on it heavily.
+        </div>
+      </div>
+    </section>
+
+    <section class="toolbar">
+      <input class="field" id="searchInput" type="search" placeholder="Search title, note, type or project" aria-label="Search bookmarks" />
+      <select id="typeFilter" aria-label="Filter by type">
+        <option value="all">All types</option>
+      </select>
+      <select id="projectFilter" aria-label="Filter by project">
+        <option value="all">All projects</option>
+      </select>
+      <button class="button primary" id="addLinkBtn">Add link</button>
+      <button class="button secondary" id="addProjectBtn">Add project</button>
+      <button class="button ghost" id="exportBtn">Export JSON</button>
+      <button class="button ghost" id="importBtn">Import JSON</button>
+    </section>
+
+    <section class="layout">
+      <aside class="panel sidebar">
+        <h2>Projects</h2>
+        <div class="small">Use the sidebar for fast project switching. The main view keeps pinned and recent links visible for quick re-finding.</div>
+        <div class="project-list" id="projectList"></div>
+        <div class="footer-note">Tip: keep project names short and link titles front-loaded.</div>
+      </aside>
+
+      <main class="content">
+        <section class="panel section">
+          <div class="section-header">
+            <div>
+              <h2>Pinned</h2>
+              <p>Your highest-frequency links across all projects.</p>
+            </div>
+          </div>
+          <div class="mini-grid" id="pinnedGrid"></div>
+        </section>
+
+        <section class="panel section">
+          <div class="section-header">
+            <div>
+              <h2>Recent</h2>
+              <p>Recently opened links across projects.</p>
+            </div>
+          </div>
+          <div class="mini-grid" id="recentGrid"></div>
+        </section>
+
+        <section class="panel section">
+          <div class="section-header">
+            <div>
+              <h2>Projects</h2>
+              <p>Project-first organisation with light link types such as Daily, Drawings, Meetings, and Dashboards.</p>
+            </div>
+          </div>
+          <div id="projectsContainer"></div>
+        </section>
+      </main>
+    </section>
+  </div>
+
+  <dialog id="projectDialog">
+    <form class="modal" method="dialog" id="projectForm">
+      <div class="modal-header">
+        <div>
+          <h3>Add project</h3>
+          <p>Create a new project section for your dashboard.</p>
+        </div>
+        <button class="close-x" value="cancel" aria-label="Close">✕</button>
+      </div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label for="projectName">Project name</label>
+          <input class="field" id="projectName" required maxlength="80" placeholder="Example: EastLink TP01" />
+        </div>
+        <div class="form-group">
+          <label for="projectColor">Colour theme</label>
+          <select id="projectColor">
+            <option value="soft-blue">Blue</option>
+            <option value="soft-green">Green</option>
+            <option value="soft-purple">Purple</option>
+            <option value="soft-gold">Gold</option>
+            <option value="soft-red">Red</option>
+            <option value="soft-slate">Slate</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="projectIcon">Project initials</label>
+          <input class="field" id="projectIcon" maxlength="4" placeholder="TP1" />
+        </div>
+      </div>
+      <div class="modal-actions">
+        <div class="left-actions"><span class="helper">Projects act as your primary navigation buckets.</span></div>
+        <div class="right-actions">
+          <button type="button" class="button ghost" data-close-dialog="projectDialog">Cancel</button>
+          <button type="submit" class="button primary">Save project</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="linkDialog">
+    <form class="modal" method="dialog" id="linkForm">
+      <div class="modal-header">
+        <div>
+          <h3 id="linkDialogTitle">Add link</h3>
+          <p>Keep entry lightweight: project, type, short title, URL, and an optional note.</p>
+        </div>
+        <button class="close-x" value="cancel" aria-label="Close">✕</button>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="linkProject">Project</label>
+          <select id="linkProject" required></select>
+        </div>
+        <div class="form-group">
+          <label for="linkType">Link type</label>
+          <select id="linkType" required></select>
+        </div>
+        <div class="form-group full">
+          <label for="linkTitle">Title</label>
+          <input class="field" id="linkTitle" required maxlength="100" placeholder="Example: RFI Register" />
+        </div>
+        <div class="form-group full">
+          <label for="linkUrl">URL</label>
+          <input class="field" id="linkUrl" type="url" required placeholder="https://..." />
+        </div>
+        <div class="form-group full">
+          <label for="linkNote">Note</label>
+          <textarea class="field" id="linkNote" maxlength="220" placeholder="Why this matters or when you use it"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="linkBadge">Short badge</label>
+          <input class="field" id="linkBadge" maxlength="16" placeholder="Daily" />
+        </div>
+        <div class="form-group">
+          <label><input id="linkPinned" type="checkbox" /> Pin this link</label>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <div class="left-actions">
+          <button type="button" class="button danger hidden" id="deleteLinkBtn">Delete link</button>
+        </div>
+        <div class="right-actions">
+          <button type="button" class="button ghost" data-close-dialog="linkDialog">Cancel</button>
+          <button type="submit" class="button primary">Save link</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <input id="importInput" type="file" accept="application/json" class="hidden" />
+
+  <script type="module" src="assets/js/app.js"></script>
+</body>
+</html>
